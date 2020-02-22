@@ -21,7 +21,7 @@ class App(QMainWindow):
         
     def initUI(self):
         self.setWindowTitle(self.title)
-        self.setGeometry(50, 50, 640, 800)
+        self.setGeometry(50, 50, 640, 500)
         
         self.label = QLabel('Welcome, ' + username, self)
         self.label.setFont(QFont("Verdana", 20, QFont.Bold))
@@ -54,24 +54,23 @@ class App(QMainWindow):
         self.city_name.addItem("Athens")
         self.city_name.resize(120 , 25)
         self.city_name.move(350, 180)
-        global city
+        
         city = str(self.city_name.currentText())
         
         self.num_days = QSpinBox(self)
         self.num_days.resize(120 , 25)
         self.num_days.move(350, 210)
         
-        global days
         days = str(self.num_days.value())
 
         self.button1 = QPushButton('Get Forecast', self)
         self.button1.setFont(QFont("Verdana", 10, QFont.Bold))
         self.button1.setStyleSheet('QPushButton {background-color: red; color: white;}')
-        self.button1.resize(100, 30)
+        self.button1.resize(120, 30)
         self.button1.move(290, 280)
         
         
-        def on_click(self):
+        def get_forecast():
                         
             url = "https://community-open-weather-map.p.rapidapi.com/forecast/daily"
 
@@ -85,35 +84,31 @@ class App(QMainWindow):
             response = requests.request("GET", url, headers=headers, params=querystring)
             data = response.json()
             data2 = response.text
-            
-            self.label5 = QLabel('WEATHER FORECAST FOR: ' + str(city), self)
-            self.label5.setFont(QtGui.QFont("Verdana", 14, QFont.Bold))
-            self.label5.setFixedWidth(400)
-            self.label5.setAlignment(QtCore.Qt.AlignCenter)
-            self.label5.move(120,340)
-            
-            if data['cod'] != '404':
+            for day in data['list']:
+                date = str(datetime.datetime.fromtimestamp(day['dt']).strftime('%d-%m-%y'))
+                weather =str(day['weather'][0]['description'])
+                min_temp = float(day['temp']['min'])
+                max_temp = float(day['temp']['max'])
+                hum = int(day['humidity'])
+        
+        def open_forecast():
                 
-                self.label6 = QLabel('city found'.upper(), self)
-                self.label6.setFont(QtGui.QFont("Verdana", 14, QFont.Bold))
-                self.label6.setFixedWidth(400)
-                self.label6.setAlignment(QtCore.Qt.AlignCenter)
-                self.label6.move(120,380)
-            else:
-                self.label7 = QLabel('city not found'.upper(), self)
-                self.label7.setFont(QtGui.QFont("Verdana", 14, QFont.Bold))
-                self.label7.setFixedWidth(400)
-                self.label7.setAlignment(QtCore.Qt.AlignCenter)
-                self.label7.move(120,380)     
         
-        self.button1.clicked.connect(on_click)
+        self.button1.clicked.connect(get_forecast)
         
-        self.button2 = QPushButton('Exit', self)
-        self.button2.clicked.connect(QCoreApplication.instance().quit)
+        self.button2 = QPushButton('Show Forecast', self)
+        self.button2.clicked.connect(open_forecast)
         self.button2.setFont(QtGui.QFont("Verdana", 10, QFont.Bold))
-        self.button2.setStyleSheet('QPushButton {background-color: black; color: white;}')
-        self.button2.resize(100, 30)
-        self.button2.move(290, 750) 
+        self.button2.setStyleSheet('QPushButton {background-color: blue; color: white;}')
+        self.button2.resize(120, 30)
+        self.button2.move(290, 365) 
+        
+        self.button3 = QPushButton('Exit', self)
+        self.button3.clicked.connect(QCoreApplication.instance().quit)
+        self.button3.setFont(QtGui.QFont("Verdana", 10, QFont.Bold))
+        self.button3.setStyleSheet('QPushButton {background-color: black; color: white;}')
+        self.button3.resize(80, 30)
+        self.button3.move(310, 450) 
         self.show()
         
 
