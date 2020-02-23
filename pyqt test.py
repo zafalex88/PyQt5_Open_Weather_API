@@ -6,8 +6,8 @@ import requests
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import (QApplication, QComboBox, QListWidget, QLabel, QLineEdit,
-                             QMainWindow, QPlainTextEdit, QPushButton, QWidget)
+from PyQt5.QtWidgets import (QApplication, QLabel, QLineEdit, QListWidget, QMainWindow,
+                            QPushButton, QSpinBox, QWidget)
 
 username = getpass.getuser()
     
@@ -21,7 +21,7 @@ class App(QMainWindow):
         
     def initUI(self):
         self.setWindowTitle(self.title)
-        self.setGeometry(50, 50, 640, 500)
+        self.setGeometry(50, 130, 640, 500)
         
         self.label = QLabel('Welcome, ' + username, self)
         self.label.setFont(QFont("Verdana", 20, QFont.Bold))
@@ -47,22 +47,16 @@ class App(QMainWindow):
         self.label4.setAlignment(QtCore.Qt.AlignCenter)
         self.label4.move(60,210)
         
-        self.city_name = QComboBox(self)
-        self.city_name.setStyleSheet('QComboBox {background-color: white;}')
-        self.city_name.addItem("Ioannina")
-        self.city_name.addItem("Konitsa")
-        self.city_name.addItem("Athens")
+        self.city_name = QLineEdit(self)
         self.city_name.resize(120 , 25)
         self.city_name.move(350, 180)
-        
-        city = str(self.city_name.currentText())
-        
-        self.num_days = QLineEdit(self)
+             
+        self.num_days = QSpinBox(self)
+        self.num_days.setRange(1, 5)
+        self.num_days.setStyleSheet('QComboBox {background-color: white;}')
         self.num_days.resize(120 , 25)
         self.num_days.move(350, 210)
         
-        days = self.num_days.text()
-
         self.button1 = QPushButton('Get Forecast', self)
         self.button1.setFont(QFont("Verdana", 10, QFont.Bold))
         self.button1.setStyleSheet('QPushButton {background-color: red; color: white;}')
@@ -73,8 +67,9 @@ class App(QMainWindow):
         def get_forecast():
                         
             url = "https://community-open-weather-map.p.rapidapi.com/forecast/daily"
-
-            querystring = {"q":city,"cnt":days,"units":"metric"}
+            self.city = str(self.city_name.text())
+            self.days = str(self.num_days.value())
+            querystring = {"q":self.city,"cnt":self.days,"units":"metric"}
 
             headers = {
             'x-rapidapi-host': "community-open-weather-map.p.rapidapi.com",
@@ -83,14 +78,8 @@ class App(QMainWindow):
 
             response = requests.request("GET", url, headers=headers, params=querystring)
             self.data = response.json()
-            self.data2 = response.text
-            print(self.data)
-            
-                        
-        def open_forecast():
-            self.msg = QListWidget()
-            self.msg.move(270, 370)
-            self.msg.insertItem(0, "Forecast for " + city + '\n')
+            #print(self.data)
+            self.frcst = ''
             for day in self.data['list']:
                 self.date = str(datetime.datetime.fromtimestamp(day['dt']).strftime('%d-%m-%y'))
                 self.weather =str(day['weather'][0]['description'])
@@ -107,7 +96,16 @@ class App(QMainWindow):
                 self.mi = '{0} {1}'.format(self.text3, self.min_temp)
                 self.ma = '{0} {1}'.format(self.text4, self.max_temp)
                 self.h = '{0} {1}{2}'.format(self.text5, self.hum, '%')
-                self.msg.insertItem(1, self.d + "\n" + self.w + '\n' + self.mi + "\n" + self.ma + "\n" + self.h + '\n')
+                self.frcst += (self.d + "\n" + self.w + '\n' + self.mi + "\n" + self.ma + "\n" + self.h + '\n\n')
+            
+                        
+        def open_forecast():
+            self.msg = QListWidget()
+            self.msg.setWindowTitle("Weather Forecast")
+            self.msg.setGeometry(0, 0, 280, 500)
+            self.msg.move(690, 100)
+            self.msg.insertItem(0, "Forecast for " + self.city + '\n')
+            self.msg.insertItem(1, self.frcst)
             self.msg.show()
         
         self.button1.clicked.connect(get_forecast)
