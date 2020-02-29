@@ -94,6 +94,7 @@ class App(QMainWindow):
                 self.label5.setAlignment(QtCore.Qt.AlignCenter)
                 self.label5.move(100,320)
                 self.label5.show()
+                
                 for day in self.data['list']:
                     self.date = str(datetime.datetime.fromtimestamp(day['dt']).strftime('%d-%m-%y'))
                     self.weather =str(day['weather'][0]['description'])
